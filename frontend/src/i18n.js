@@ -473,13 +473,4 @@ function updatePageTranslations() {
     };
     currentLangElement.textContent = flags[currentLanguage] || '🇬🇧 EN';
   }
-  
-  // Re-render SEULEMENT home et game (PAS leaderboard)
-  const currentHash = window.location.hash;
-  if (currentHash === '#home' || currentHash === '') {
-    Home.render();
-  } else if (currentHash === '#game') {
-    Game.render();
-  }
-  // Leaderboard n'a PAS besoin de re-render, juste updatePageTranslations()
 }
