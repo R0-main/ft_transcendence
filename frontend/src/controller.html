@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: sans-serif;
+        }
+
+        #error-msg {
+            color: white;
+            text-align: center;
+            margin-top: 50px;
+            display: none;
+            padding: 20px;
+        }
+
+        .controller-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.5);
+            transition: background 0.1s;
+            cursor: pointer;
+        }
+
+        .btn-up {
+            background: linear-gradient(to bottom, #667eea, #5a6fd6);
+            border-bottom: 2px solid rgba(0,0,0,0.2);
+        }
+
+        .btn-up:active, .btn-up.active {
+            background: #4e5db3;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-down {
+            background: linear-gradient(to bottom, #764ba2, #663d91);
+            border-top: 2px solid rgba(0,0,0,0.2);
+        }
+
+        .btn-down:active, .btn-down.active {
+            background: #55327a;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            font-size: 0.8rem;
+        }
+
+        .connected { color: #4caf50; }
+        .disconnected { color: #f44336; }
+
+    </style>
+</head>
+<body>
+    <div id="error-msg">
+        <h2>Invalid Game Link</h2>
+        <p>Please scan the QR code again.</p>
+    </div>
+
+    <div id="controller" class="controller-container">
+        <div class="status-bar">
+            <span id="status-text" class="disconnected">Connecting...</span>
+        </div>
+        
+        <div id="btn-up" class="btn-area btn-up">
+            ▲
+        </div>
+        <div id="btn-down" class="btn-area btn-down">
+            ▼
+        </div>
+    </div>
+
+    <script>
+        const statusText = document.getElementById('status-text');
+        const btnUp = document.getElementById('btn-up');
+        const btnDown = document.getElementById('btn-down');
+        const controllerDiv = document.getElementById('controller');
+        const errorMsg = document.getElementById('error-msg');
+
+        // Get params
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('gameId');
+        const playerId = urlParams.get('playerId');
+
+        if (!gameId || !playerId) {
+            controllerDiv.style.display = 'none';
+            errorMsg.style.display = 'block';
+            throw new Error('Missing params');
+        }
+
+        // WebSocket
+        console.log('Connecting to WS for game:', gameId, 'player:', playerId);
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/api/game/${gameId}/${playerId}/controller_socket`;
+        let ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            statusText.textContent = 'Connected';
+            statusText.className = 'connected';
+        };
+
+        ws.onclose = () => {
+            statusText.textContent = 'Disconnected';
+            statusText.className = 'disconnected';
+        };
+
+        ws.onerror = (err) => {
+            console.error('WS Error', err);
+            statusText.textContent = 'Connection Error';
+            statusText.className = 'disconnected';
+        };
+
+        // Input handling
+        function sendCommand(cmd) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'controller', command: cmd }));
+            }
+        }
+
+        const handleStart = (dir, elem) => (e) => {
+            e.preventDefault(); // Prevent scroll/zoom
+            elem.classList.add('active');
+            sendCommand(dir);
+        };
+
+        const handleEnd = (elem) => (e) => {
+            e.preventDefault();
+            elem.classList.remove('active');
+            sendCommand('stop');
+        };
+
+        // Up Button
+        btnUp.addEventListener('touchstart', handleStart('up', btnUp), { passive: false });
+        btnUp.addEventListener('touchend', handleEnd(btnUp));
+        btnUp.addEventListener('mousedown', handleStart('up', btnUp));
+        btnUp.addEventListener('mouseup', handleEnd(btnUp));
+        btnUp.addEventListener('mouseleave', handleEnd(btnUp));
+
+        // Down Button
+        btnDown.addEventListener('touchstart', handleStart('down', btnDown), { passive: false });
+        btnDown.addEventListener('touchend', handleEnd(btnDown));
+        btnDown.addEventListener('mousedown', handleStart('down', btnDown));
+        btnDown.addEventListener('mouseup', handleEnd(btnDown));
+        btnDown.addEventListener('mouseleave', handleEnd(btnDown));
+
+    </script>
+</body>
+</html>

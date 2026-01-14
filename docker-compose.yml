@@ -1,0 +1,41 @@
+services:
+  nginx:
+    container_name: transcendence_nginx
+    build: ./nginx
+    ports:
+      - "8443:443"   # HTTPS sur port 8443 au lieu de 443
+      - "8080:80"    # HTTP sur port 8080 au lieu de 80
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - transcendence
+    restart: unless-stopped
+
+  frontend:
+    container_name: transcendence_frontend
+    build: ./frontend
+    volumes:
+      - ./frontend/src:/app/src
+      - /app/node_modules
+    networks:
+      - transcendence
+    restart: unless-stopped
+
+  backend:
+    container_name: transcendence_backend
+    build: ./backend
+    volumes:
+      - ./backend/src:/app/src
+      - /app/node_modules
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - transcendence
+    restart: unless-stopped
+
+networks:
+  transcendence:
+    driver: bridge

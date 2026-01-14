@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ft_transcendence</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Tailwind CSS via CDN -->
+    <script>
+        // Configuration Tailwind
+        tailwind = { corePlugins: { preflight: false } };
+        //warning Tailwind CDN (mask)
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0]?.includes?.('cdn.tailwindcss.com')) return;
+            originalWarn.apply(console, args);
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div id="stars"></div>
+    <div class="nebula"></div>
+    
+    <!-- Main Container-->
+    <div id="app" class="container"></div>
+    
+    <!-- 2FA Login Modal -->
+    <div id="twoFactorLoginModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🔐 2FA Code Required</h2>
+            
+            <div id="2FACodeSection">
+                <p>Enter the code from your authenticator app</p>
+                <input type="text" id="loginTwoFactorCode" class="input-code" maxlength="6" placeholder="000000">
+                
+                <div class="modal-buttons">
+                    <button id="verify2FALoginBtn" class="setting-btn">Verify</button>
+                    <button onclick="close2FALoginModal()" class="setting-btn">Cancel</button>
+                </div>
+                
+                <p style="text-align: center; margin-top: 15px;">
+                    <a href="#" onclick="show2FABackupCodeInput(); return false;" style="color: #667eea; font-size: 0.9rem;">
+                        Use a backup code
+                    </a>
+                </p>
+            </div>
+            
+            <div id="2FABackupCodeSection" class="hidden">
+                <p>Enter one of your backup codes</p>
+                <input type="text" id="loginBackupCode" class="input-code" placeholder="XXXXXXXX">
+                
+                <div class="modal-buttons">
+                    <button id="verify2FABackupCodeBtn" class="setting-btn">Verify</button>
+                    <button onclick="show2FACodeInput(); return false;" class="setting-btn">Back to Authenticator</button>
+                    <button onclick="close2FALoginModal()" class="setting-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="./i18n.js"></script>
+    <script src="./header.js"></script>
+    <script src="./home.js"></script>
+    <script src="./game.js"></script>
+    <script src="./leaderboard.js"></script>
+    <script src="./settings.js"></script>
+    <script src="./tournament.js"></script>
+    <script src="./router.js"></script>
+    <script src="./main.js"></script>
+    <script>
+        // Initialize header, router
+        Header.render();
+        Router.init();
+    </script>
+</body>
+</html>
